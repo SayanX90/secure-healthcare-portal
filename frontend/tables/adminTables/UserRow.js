@@ -43,7 +43,7 @@ export default function UserRow({ user, onSelect }) {
       onClick={() => onSelect(user)}
       className="cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-white/5 group border-b border-slate-200 dark:border-border last:border-0"
     >
-      {/* Name + email */}
+      {/* Name + phone */}
       <td className="px-6 py-4 text-left">
         <div className="flex items-center gap-4">
           <Avatar name={user.name} />
@@ -51,7 +51,7 @@ export default function UserRow({ user, onSelect }) {
             <p className="font-bold text-slate-900 dark:text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
               {user.name}
             </p>
-            <p className="text-xs font-medium text-slate-500 dark:text-muted mt-0.5">{user.email}</p>
+            <p className="text-xs font-medium text-slate-500 dark:text-muted mt-0.5">{user.phone}</p>
           </div>
         </div>
       </td>

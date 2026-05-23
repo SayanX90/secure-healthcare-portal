@@ -53,7 +53,7 @@ function ProductModal({ product, isOpen, onClose, onApprove, onReject, isBusy })
               <div className="space-y-3 text-sm">
                 <div><span className="font-semibold text-slate-700 block">Name:</span> <span className="text-slate-600">{product.customerName}</span></div>
                 <div><span className="font-semibold text-slate-700 block">Address:</span> <span className="text-slate-600">{product.customerAddress}</span></div>
-                <div><span className="font-semibold text-slate-700 block">Submitted By (User):</span> <span className="text-slate-600">{product.userId?.name} ({product.userId?.email})</span></div>
+                <div><span className="font-semibold text-slate-700 block">Submitted By (User):</span> <span className="text-slate-600">{product.userId?.name} ({product.userId?.phone})</span></div>
               </div>
             </div>
 
@@ -208,7 +208,7 @@ export default function ProductsTable({ products }) {
 
   // ── STEP 2: Build a List of Unique Users (for the "User" dropdown filter) ──
   // We loop through all products and collect each unique user who submitted one.
-  // Example result: [{ id: "abc", name: "Rohan", email: "rohan@..." }, ...]
+  // Example result: [{ id: "abc", name: "Rohan", phone: "9876543210" }, ...]
   const uniqueUsers = useMemo(() => {
     const seen = new Map();
     products.forEach((p) => {
@@ -216,7 +216,7 @@ export default function ProductsTable({ products }) {
         seen.set(p.userId._id, {
           id: p.userId._id,
           name: p.userId.name,
-          email: p.userId.email,
+          phone: p.userId.phone,
         });
       }
     });
@@ -257,7 +257,7 @@ export default function ProductsTable({ products }) {
           p.customerName.toLowerCase().includes(searchText) ||
           p.productName.toLowerCase().includes(searchText) ||
           p.serialNumbers?.some((sn) => sn.toLowerCase().includes(searchText)) ||
-          (p.userId?.email && p.userId.email.toLowerCase().includes(searchText)) ||
+          (p.userId?.phone && p.userId.phone.toLowerCase().includes(searchText)) ||
           (p.userId?.name && p.userId.name.toLowerCase().includes(searchText));
       }
 
@@ -374,8 +374,8 @@ export default function ProductsTable({ products }) {
             </h3>
             <p className="text-sm text-slate-500 mb-6">
               {confirmAction.action === "approved"
-                ? "This will mark the product as approved and notify the user by email."
-                : "This will reject the registration and notify the user by email."}
+                ? "This will mark the product as approved."
+                : "This will reject the registration."}
             </p>
             <div className="flex gap-3">
               {/* Cancel button — closes the confirmation popup */}

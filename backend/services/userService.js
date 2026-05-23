@@ -8,7 +8,7 @@ export async function getAllUsers() {
   await connectDB();
   const users = await User.find({})
     .sort({ createdAt: -1 })
-    .select("name email role isVerified isApproved createdAt")
+    .select("name phone role isVerified isApproved createdAt")
     .lean();
 
   return users.map((user) => ({ ...user, _id: user._id.toString() }));
@@ -21,7 +21,7 @@ export async function approveUser(id) {
     id,
     { $set: { isApproved: true } },
     { new: true }
-  ).select("name email role isVerified isApproved createdAt");
+  ).select("name phone role isVerified isApproved createdAt");
 
   if (!user) {
     const err = new Error("User not found."); err.status = 404; throw err;

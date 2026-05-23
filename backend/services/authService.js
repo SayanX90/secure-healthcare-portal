@@ -1,114 +1,97 @@
-import bcrypt from "bcryptjs";
 import { connectDB } from "@/backend/database/connection/db";
-import { createOtpExpiry, generateOtp } from "@/backend/utils/otp";
+import { createOtpExpiry, generateOtp as createOtp } from "@/backend/utils/otp";
 import { AUTH_COOKIE, cleanUser, cookieSettings, createToken } from "@/backend/utils/auth";
-import { sendOtpEmail } from "@/backend/config/mailer";
 import User from "@/backend/database/models/User";
+import GeneratedOtp from "@/backend/database/models/GeneratedOtp";
 
-// Business logic file for auth: signup, login, and OTP verification.
-
-// ─── Signup ───────────────────────────────────────────────────────────────────
-export async function signupUser({ name, email, password }) {
+// ─── Generate OTP ─────────────────────────────────────────────────────────────
+export async function generateOtp({ phone, countryCode = "+91" }) {
   await connectDB();
 
-  const normalizedEmail = email.toLowerCase();
-  const existingUser = await User.findOne({ email: normalizedEmail });
-  if (existingUser) {
-    const err = new Error("Email already exists.");
-    err.status = 409;
+  // Validate Indian phone number (10 digits)
+  if (!/^\d{10}$/.test(phone)) {
+    const err = new Error("Invalid phone number. Must be 10 digits.");
+    err.status = 400;
     throw err;
   }
 
-  const otp = generateOtp();
-  const hashedPassword = await bcrypt.hash(password, 12);
-  const legacyUsernamePrefix =
-    normalizedEmail.split("@")[0].replace(/[^a-z0-9]/g, "").slice(0, 20) || "user";
-  const legacyUsername = `${legacyUsernamePrefix}${Date.now().toString(36).slice(-8)}`;
+  // Generate 4 digit OTP and 2 minute expiry
+  const otp = createOtp();
+  const expiresAt = createOtpExpiry();
 
-  await User.create({
-    name,
-    username: legacyUsername,
-    email: normalizedEmail,
-    password: hashedPassword,
+  // Save to MongoDB
+  await GeneratedOtp.create({
+    phone,
+    countryCode,
     otp,
-    otpExpiry: createOtpExpiry(),
-    isVerified: false,
-    isApproved: false,
-    role: "user",
+    expiresAt,
   });
 
-  await sendOtpEmail({ to: normalizedEmail, name, otp });
+  // DO NOT integrate SMS gateway here as requested.
+  console.log(`[TESTING ONLY] OTP for ${countryCode} ${phone}: ${otp}`);
 
-  return { success: true, message: "Account created successfully. Please verify your email." };
+  return { success: true, message: "OTP sent successfully." };
 }
 
-// ─── Login ────────────────────────────────────────────────────────────────────
-export async function loginUser({ email, password }) {
+// ─── Verify OTP ───────────────────────────────────────────────────────────────
+export async function verifyOtp({ phone, countryCode = "+91", otp }) {
   await connectDB();
 
-  const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+  // STEP 1: Find OTP document by phone number
+  const latestOtpRecord = await GeneratedOtp.findOne({
+    phone,
+    countryCode,
+    verified: false
+  }).sort({ createdAt: -1 });
+
+  if (!latestOtpRecord) {
+    const err = new Error("OTP expired. Please resend OTP.");
+    err.status = 400;
+    throw err;
+  }
+
+  // STEP 2: Check if entered OTP matches database OTP
+  if (latestOtpRecord.otp !== otp) {
+    const err = new Error("OTP mismatch");
+    err.status = 400;
+    throw err;
+  }
+
+  // STEP 3: ONLY AFTER OTP MATCHES, check expiration time
+  if (latestOtpRecord.expiresAt < new Date()) {
+    const err = new Error("OTP expired. Please resend OTP.");
+    err.status = 400;
+    throw err;
+  }
+
+  // Mark OTP as verified to prevent reuse, but keep the record
+  latestOtpRecord.verified = true;
+  await latestOtpRecord.save();
+
+  // Find user by phone, or create if doesn't exist
+  let user = await User.findOne({ phone, countryCode });
+  let isNewUser = false;
+
   if (!user) {
-    const err = new Error("Invalid email or password.");
-    err.status = 401;
-    throw err;
-  }
-
-  const isValidPassword = await bcrypt.compare(password, user.password);
-  if (!isValidPassword) {
-    const err = new Error("Invalid email or password.");
-    err.status = 401;
-    throw err;
-  }
-
-  if (!user.isVerified) {
-    const err = new Error("Verify your email before logging in.");
-    err.status = 403;
-    throw err;
-  }
-
-  if (!user.isApproved) {
-    const err = new Error("Waiting for admin approval.");
-    err.status = 403;
-    throw err;
+    isNewUser = true;
+    user = await User.create({
+      phone,
+      countryCode,
+      name: "User",
+      role: "user",
+      isVerified: true,
+      isApproved: true,
+    });
   }
 
   const safeUser = cleanUser(user);
   const token = await createToken(safeUser);
 
-  return { safeUser, token };
+  return { success: true, safeUser, token, isNewUser, message: "Logged in successfully." };
 }
 
-// ─── Verify OTP ───────────────────────────────────────────────────────────────
-export async function verifyOtp({ email, otp }) {
-  await connectDB();
-
-  const user = await User.findOne({ email: email.toLowerCase() }).select("+otp +otpExpiry");
-  if (!user) {
-    const err = new Error("User not found.");
-    err.status = 404;
-    throw err;
-  }
-
-  if (user.isVerified) {
-    return { success: true, message: "Email already verified." };
-  }
-
-  if (!user.otp || !user.otpExpiry || user.otpExpiry.getTime() < Date.now()) {
-    const err = new Error("OTP expired. Please sign up again or request a new OTP.");
-    err.status = 400;
-    throw err;
-  }
-
-  if (user.otp !== otp) {
-    const err = new Error("Invalid OTP.");
-    err.status = 400;
-    throw err;
-  }
-
-  user.isVerified = true;
-  user.otp = undefined;
-  user.otpExpiry = undefined;
-  await user.save();
-
-  return { success: true, message: "Email verified successfully. Waiting for admin approval." };
+// ─── Resend OTP ───────────────────────────────────────────────────────────────
+export async function resendOtp({ phone, countryCode = "+91" }) {
+  // We can just reuse generateOtp since it creates a new record
+  return generateOtp({ phone, countryCode });
 }

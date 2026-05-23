@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { registerProduct, getMyProducts, getAllProducts, updateProductStatus } from "@/backend/services/productService";
 import { requireAuth, requireAdmin } from "@/backend/middleware/routeGuards";
-import { sendProductStatusEmail } from "@/backend/services/emailService";
-
 // Controller file: handles requests and calls product services.
 
 // ─── POST /api/products/register ─────────────────────────────────────────────
@@ -67,18 +65,7 @@ export async function updateProductStatusHandler(request, id) {
 
     const { updated, product } = await updateProductStatus(id, status);
 
-    if ((status === "approved" || status === "rejected") && product?.userId?.email) {
-      try {
-        await sendProductStatusEmail({
-          to: product.userId.email,
-          name: product.userId.name,
-          productName: product.productName,
-          status,
-        });
-      } catch (emailError) {
-        console.error("Failed to send product status email:", emailError);
-      }
-    }
+    // Email notification removed as requested
 
     return NextResponse.json({ message: `Product successfully ${status}.`, product: updated });
   } catch (error) {

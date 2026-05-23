@@ -123,7 +123,7 @@ export async function getMyProducts(userId) {
 // ─── Admin: Get All Products ──────────────────────────────────────────────────
 export async function getAllProducts() {
   await connectDB();
-  return Product.find({}).populate("userId", "name email").sort({ createdAt: -1 }).lean();
+  return Product.find({}).populate("userId", "name phone").sort({ createdAt: -1 }).lean();
 }
 
 // ─── Admin: Update Product Status ────────────────────────────────────────────
@@ -138,7 +138,7 @@ export async function updateProductStatus(id, status) {
     const err = new Error("Product not found."); err.status = 404; throw err;
   }
 
-  // Fetch again with populated userId for email notification
+  // Fetch again with populated userId
   const product = await Product.findById(id).populate("userId");
   return { updated, product };
 }

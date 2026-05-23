@@ -56,7 +56,7 @@ export default async function AdminPage() {
   await connectDB();
   const users = await User.find({})
     .sort({ isApproved: 1, createdAt: -1 })
-    .select("name email role isVerified isApproved createdAt")
+    .select("name phone role isVerified isApproved createdAt")
     .lean();
 
   // Calculate summary numbers for the stat cards

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import ThemeToggle from "@/ui/ThemeToggle";
 import { Bell, LogOut, Menu } from "lucide-react";
 
@@ -10,6 +10,18 @@ export default function Navbar({ user, onMenuToggle }) {
   const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   async function logout() {
     setLoading(true);
@@ -61,15 +73,67 @@ export default function Navbar({ user, onMenuToggle }) {
 
         <div className="h-6 w-px bg-border" />
 
-        {/* User info */}
-        <div className="flex items-center gap-3">
+        {/* User info & Profile Dropdown */}
+        <div className="relative flex items-center gap-3" ref={dropdownRef}>
           <div className="hidden text-right sm:block">
             <p className="text-sm font-semibold leading-none text-foreground">{user.name}</p>
             <p className="mt-1 text-xs font-medium capitalize text-muted">{user.role}</p>
           </div>
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
-            {initials}
-          </div>
+          <button 
+            onClick={() => setIsProfileOpen(!isProfileOpen)}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 overflow-hidden text-sm font-bold text-primary hover:ring-2 hover:ring-primary/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary"
+            title="View Profile"
+          >
+            {user.profileImage ? (
+              <img src={user.profileImage} alt={user.name} className="h-full w-full object-cover" />
+            ) : (
+              initials
+            )}
+          </button>
+
+          {/* Profile Dropdown Card */}
+          {isProfileOpen && (
+            <div className="absolute right-0 top-12 mt-2 w-72 rounded-xl border border-border bg-card p-4 shadow-xl z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="flex flex-col items-center gap-3 pb-4 border-b border-border">
+                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden text-xl font-bold text-primary ring-2 ring-primary/20">
+                  {user.profileImage ? (
+                    <img src={user.profileImage} alt={user.name} className="h-full w-full object-cover" />
+                  ) : (
+                    initials
+                  )}
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold text-foreground text-base">{user.name}</p>
+                  <p className="text-xs font-medium text-muted capitalize">{user.role}</p>
+                </div>
+              </div>
+              
+              <div className="py-3 space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted">Gender</span>
+                  <span className="font-medium text-foreground">{user.gender || "Not set"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted">Age</span>
+                  <span className="font-medium text-foreground">{user.age ? `${user.age} yrs` : "Not set"}</span>
+                </div>
+                <div className="flex flex-col gap-1 mt-2">
+                  <span className="text-muted">Address</span>
+                  <span className="font-medium text-foreground text-xs leading-relaxed">{user.address || "Not set"}</span>
+                </div>
+              </div>
+              
+              <div className="pt-3 border-t border-border flex flex-col gap-2">
+                <Link 
+                  href="/profile" 
+                  onClick={() => setIsProfileOpen(false)}
+                  className="w-full text-center py-2 text-sm font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors"
+                >
+                  Edit Profile
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="h-6 w-px bg-border hidden sm:block" />

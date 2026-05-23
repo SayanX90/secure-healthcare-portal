@@ -15,7 +15,7 @@ export default async function ProductsPage() {
   await connectDB();
 
   const products = await Product.find({})
-    .populate("userId", "name email")
+    .populate("userId", "name phone")
     .sort({ createdAt: -1 })
     .lean();
 

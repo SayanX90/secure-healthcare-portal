@@ -1,7 +1,9 @@
 export function generateOtp() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  // Generate 4 digit OTP
+  return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
 export function createOtpExpiry() {
-  return new Date(Date.now() + 5 * 60 * 1000);
+  // 2 minutes from now
+  return new Date(Date.now() + 2 * 60 * 1000);
 }

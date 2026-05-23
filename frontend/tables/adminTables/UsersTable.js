@@ -37,7 +37,7 @@ function UserModal({ user, isOpen, onClose, onApprove, onDelete, isBusy, current
           <X className="h-5 w-5" />
         </button>
 
-        {/* ── Header: Avatar + Name + Email ── */}
+        {/* ── Header: Avatar + Name + Phone ── */}
         <div className="flex items-center gap-4 border-b border-border pb-6">
           {/* Circle with the user's initials (e.g. "SD" for "Sayan Dey") */}
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-lg font-bold text-primary">
@@ -53,7 +53,7 @@ function UserModal({ user, isOpen, onClose, onApprove, onDelete, isBusy, current
                 </span>
               )}
             </h3>
-            <p className="text-sm text-muted">{user.email}</p>
+            <p className="text-sm text-muted">{user.phone}</p>
           </div>
         </div>
 
@@ -73,9 +73,9 @@ function UserModal({ user, isOpen, onClose, onApprove, onDelete, isBusy, current
               {user.isApproved ? "Approved" : "Pending"}
             </Badge>
           </div>
-          {/* Email Verified */}
+          {/* Phone Verified */}
           <div>
-            <p className="text-xs font-medium text-muted tracking-wider mb-1 uppercase">Email Verified</p>
+            <p className="text-xs font-medium text-muted tracking-wider mb-1 uppercase">Phone Verified</p>
             <span className={`text-sm font-semibold ${user.isVerified ? "text-success" : "text-red-500 dark:text-red-400"}`}>
               {user.isVerified ? "Yes" : "No"}
             </span>
@@ -165,10 +165,10 @@ export default function UsersTable({ users: initialUsers, currentUser }) {
   const filteredUsers = users.filter((user) => {
     const text = searchQuery.toLowerCase();
 
-    // Does the user's name or email contain the search text?
+    // Does the user's name or phone contain the search text?
     const matchesSearch =
       user.name.toLowerCase().includes(text) ||
-      user.email.toLowerCase().includes(text);
+      user.phone.toLowerCase().includes(text);
 
     // Does the user's role match the dropdown? ("all" means show everyone)
     const matchesRole = roleFilter === "all" || user.role === roleFilter;

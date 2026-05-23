@@ -102,7 +102,7 @@ export default function ProductFilters({
           <option value="all">All Users</option>
           {uniqueUsers.map((u) => (
             <option key={u.id} value={u.id}>
-              {u.name} ({u.email})
+              {u.name} ({u.phone})
             </option>
           ))}
         </select>

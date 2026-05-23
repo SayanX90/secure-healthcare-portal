@@ -4,60 +4,84 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "Name is required"],
       trim: true,
-      minlength: 2,
       maxlength: 80,
+      default: "User",
     },
-    email: {
+    phone: {
       type: String,
-      required: [true, "Email is required"],
+      required: [true, "Phone number is required"],
       unique: true,
-      lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, "Please enter a valid email"],
+      match: [/^\d{10}$/, "Please enter a valid 10-digit phone number"],
     },
-    username: {
+    countryCode: {
       type: String,
-      required: false,
-      unique: true,
-      sparse: true,
-      lowercase: true,
+      default: "+91",
       trim: true,
-      minlength: 3,
-      maxlength: 30,
     },
-    password: {
+    gender: {
       type: String,
-      required: [true, "Password is required"],
-      minlength: 8,
-      select: false,
+      enum: ["Male", "Female", "Other"],
+    },
+    age: {
+      type: Number,
+      min: 0,
+      max: 120,
+    },
+    address: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
+    profileImage: {
+      type: String,
+      default: "",
+    },
+    profileCompleted: {
+      type: Boolean,
+      default: false,
     },
     role: {
       type: String,
       enum: ["user", "admin"],
       default: "user",
     },
-    otp: {
-      type: String,
-      select: false,
-    },
-    otpExpiry: {
-      type: Date,
-      select: false,
-    },
     isVerified: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     isApproved: {
       type: Boolean,
-      default: false,
+      default: true, // Auto-approve
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
+
+// ─── Auto-cleanup stale indexes from old schema ──────────────────────────────
+// The old schema had `email: { unique: true }` and `username: { unique: true }`.
+// After migrating to phone+OTP, MongoDB still keeps those indexes, causing
+// E11000 duplicate key errors when new users are created without those fields
+// (all get null → unique conflict). This drops them automatically on first load.
+const STALE_INDEXES = ["email_1", "username_1"];
+
+(async () => {
+  try {
+    const collection = User.collection;
+    const indexes = await collection.indexes();
+    for (const name of STALE_INDEXES) {
+      if (indexes.some((idx) => idx.name === name)) {
+        await collection.dropIndex(name);
+        console.log(`[User] Dropped stale index: ${name}`);
+      }
+    }
+  } catch (_) {
+    // Indexes don't exist or connection not ready yet — safe to ignore.
+    // The migration script (scripts/dropStaleIndexes.js) can be run manually.
+  }
+})();
 
 export default User;

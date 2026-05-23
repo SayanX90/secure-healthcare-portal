@@ -13,19 +13,40 @@ if (!cached) {
 }
 
 export async function connectDB() {
+  // If we already have a connection, verify it's still alive
   if (cached.conn) {
-    return cached.conn;
+    const readyState = mongoose.connection.readyState;
+    // 0 = disconnected, 3 = disconnecting — need to reconnect
+    if (readyState === 0 || readyState === 3) {
+      cached.conn = null;
+      cached.promise = null;
+    } else {
+      return cached.conn;
+    }
   }
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
-      bufferCommands: false,
-    }).then((mongoose) => mongoose);
+    cached.promise = mongoose
+      .connect(MONGODB_URI, {
+        bufferCommands: false,
+        serverSelectionTimeoutMS: 10000,
+        socketTimeoutMS: 45000,
+        maxIdleTimeMS: 30000,
+      })
+      .then((mongoose) => {
+        // Clear cache on unexpected disconnects so next request reconnects
+        mongoose.connection.on("disconnected", () => {
+          cached.conn = null;
+          cached.promise = null;
+        });
+        return mongoose;
+      });
   }
 
   try {
     cached.conn = await cached.promise;
   } catch (e) {
+    cached.conn = null;
     cached.promise = null;
     throw e;
   }

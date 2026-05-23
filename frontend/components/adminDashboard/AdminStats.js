@@ -75,7 +75,7 @@ export default function AdminStats({ totalAdmins, pendingApproval, approvedUsers
                 </div>
                 <div>
                   <p className="text-sm font-bold text-slate-900 dark:text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{user.name}</p>
-                  <p className="text-xs font-medium text-slate-500 dark:text-muted">{user.email}</p>
+                  <p className="text-xs font-medium text-slate-500 dark:text-muted">{user.phone}</p>
                 </div>
               </div>
               <div className="text-right">

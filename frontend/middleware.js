@@ -1,10 +1,11 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { AUTH_COOKIE, readToken } from "@/backend/utils/auth";
 
-const guestPages = ["/login", "/signup", "/verify-otp"];
+const guestPages = ["/login", "/verify-otp"];
 const userPages = ["/dashboard"];
+const profilePage = ["/profile"];
 const adminPages = ["/admin"];
-const userApis = ["/api/dashboard"];
+const userApis = ["/api/dashboard", "/api/user"];
 const adminApis = ["/api/admin", "/api/users"];
 
 function isRoute(pathname, routes) {
@@ -45,6 +46,10 @@ export async function middleware(request) {
       return goTo("/login", request, hasBadToken);
     }
 
+    if (!user.profileCompleted) {
+      return goTo("/profile", request);
+    }
+
     return goTo(isAdmin ? "/admin" : "/dashboard", request);
   }
 
@@ -76,6 +81,9 @@ export async function middleware(request) {
     }
 
     if (isLoggedIn) {
+      if (!user.profileCompleted) {
+        return goTo("/profile", request);
+      }
       return goTo(isAdmin ? "/admin" : "/dashboard", request);
     }
 
@@ -83,6 +91,22 @@ export async function middleware(request) {
   }
 
   if (isRoute(pathname, userPages)) {
+    if (!isLoggedIn) {
+      return goTo(`/login?next=${encodeURIComponent(pathname)}`, request, hasBadToken);
+    }
+
+    if (!user.profileCompleted) {
+      return goTo("/profile", request);
+    }
+
+    if (isAdmin) {
+      return goTo("/admin", request);
+    }
+
+    return NextResponse.next();
+  }
+
+  if (isRoute(pathname, profilePage)) {
     if (!isLoggedIn) {
       return goTo(`/login?next=${encodeURIComponent(pathname)}`, request, hasBadToken);
     }
@@ -113,12 +137,13 @@ export const config = {
   matcher: [
     "/",
     "/login",
-    "/signup",
     "/verify-otp",
     "/dashboard/:path*",
+    "/profile",
     "/admin/:path*",
     "/api/admin/:path*",
     "/api/users/:path*",
+    "/api/user/:path*",
     "/api/dashboard/:path*",
   ],
 };

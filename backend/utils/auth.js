@@ -39,9 +39,14 @@ export function cleanUser(user) {
   return {
     id: user._id.toString(),
     name: user.name,
-    email: user.email,
+    phone: user.phone,
     role: user.role,
+    gender: user.gender,
+    age: user.age,
+    address: user.address,
     isVerified: user.isVerified,
     isApproved: user.isApproved,
+    profileCompleted: user.profileCompleted,
+    profileImage: user.profileImage,
   };
 }

@@ -1,32 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { ClipboardList, PackagePlus, PlusCircle } from "lucide-react";
+import { BookOpen, Package, PackagePlus } from "lucide-react";
 import DashboardCards from "@/components/userDashboard/DashboardCards";
 import DashboardHeader from "@/components/userDashboard/DashboardHeader";
-import SearchBar from "@/components/userDashboard/SearchBar";
 
 const dashboardActions = [
-  {
-    id: "new-complaint",
-    title: "New Complaint",
-    description: "Submit a new service complaint or issue report instantly.",
-    icon: PlusCircle,
-    color: "bg-blue-50 text-blue-600",
-    hoverBorder: "hover:border-blue-300",
-    badge: null,
-    href: "/dashboard/complaints/new",
-  },
-  {
-    id: "all-complaints",
-    title: "All Complaints",
-    description: "View and manage all your submitted complaints history.",
-    icon: ClipboardList,
-    color: "bg-indigo-50 text-indigo-600",
-    hoverBorder: "hover:border-indigo-300",
-    badge: "12",
-    href: "/dashboard/complaints",
-  },
+
   {
     id: "product-registration",
     title: "Product Registration",
@@ -37,29 +16,40 @@ const dashboardActions = [
     badge: null,
     href: "/dashboard/products/register",
   },
+  {
+    id: "my-products",
+    title: "My Products",
+    description: "View and manage all your registered products and warranties.",
+    icon: Package,
+    color: "bg-indigo-50 text-indigo-600",
+    hoverBorder: "hover:border-indigo-300",
+    badge: null,
+    href: "/dashboard/products",
+    showGetStarted: false,
+  },
+  {
+    id: "e-learning",
+    title: "E-Learning",
+    description: "Access training modules, tutorials, and learning resources.",
+    icon: BookOpen,
+    color: "bg-orange-50 text-orange-600",
+    hoverBorder: "hover:border-orange-300",
+    badge: "Inactive",
+    href: null,
+  },
+
 ];
 
 // UI component for the user dashboard screen.
 export default function DashboardPage({ user }) {
-  const [search, setSearch] = useState("");
   const firstName = user?.name?.split(" ")[0] ?? "there";
-  const searchText = search.trim().toLowerCase();
-
-  const visibleActions = searchText
-    ? dashboardActions.filter(
-      (action) =>
-        action.title.toLowerCase().includes(searchText) ||
-        action.description.toLowerCase().includes(searchText)
-    )
-    : dashboardActions;
 
   return (
     <div className="max-w-6xl mx-auto pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <DashboardHeader firstName={firstName} />
 
       <div className="space-y-8">
-        <SearchBar value={search} onChange={setSearch} />
-        <DashboardCards actions={visibleActions} />
+        <DashboardCards actions={dashboardActions} />
       </div>
     </div>
   );

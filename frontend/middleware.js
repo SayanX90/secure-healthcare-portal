@@ -3,7 +3,7 @@ import { AUTH_COOKIE, readToken } from "@/backend/utils/auth";
 
 const guestPages = ["/login", "/verify-otp"];
 const userPages = ["/dashboard"];
-const profilePage = ["/profile"];
+const profilePage = ["/profile", "/profile/edit"];
 const adminPages = ["/admin"];
 const userApis = ["/api/dashboard", "/api/user"];
 const adminApis = ["/api/admin", "/api/users"];

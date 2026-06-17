@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, Users, Package } from "lucide-react";
+import { LayoutDashboard, Users, Package, ClipboardList } from "lucide-react";
 
 const navItems = {
   user: [
@@ -12,6 +12,11 @@ const navItems = {
       href: "/dashboard/products",
       icon: <Package className="h-5 w-5 shrink-0" />,
       label: "My Products",
+    },
+    {
+      href: "/dashboard/requests",
+      icon: <ClipboardList className="h-5 w-5 shrink-0" />,
+      label: "My Requests",
     },
   ],
   admin: [

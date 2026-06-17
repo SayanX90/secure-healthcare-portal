@@ -24,8 +24,8 @@ function InputField({ label, error, required, ...props }) {
       <input
         {...props}
         className={`w-full min-h-[44px] rounded-lg border ${error
-            ? "border-red-300 focus:border-red-500 focus:ring-red-500 bg-red-50/30 dark:bg-red-500/10 dark:border-red-500/50"
-            : "border-border focus:border-primary focus:ring-primary bg-background"
+          ? "border-red-300 focus:border-red-500 focus:ring-red-500 bg-red-50/30 dark:bg-red-500/10 dark:border-red-500/50"
+          : "border-border focus:border-primary focus:ring-primary bg-background"
           } px-4 py-3 text-sm text-foreground placeholder:text-muted/70 shadow-sm transition-all duration-200 focus:outline-none focus:ring-2`}
       />
       {error && <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{error.message}</p>}
@@ -43,8 +43,8 @@ function TextAreaField({ label, error, required, rows = 3, ...props }) {
         rows={rows}
         {...props}
         className={`w-full min-h-[44px] rounded-lg border ${error
-            ? "border-red-300 focus:border-red-500 focus:ring-red-500 bg-red-50/30 dark:bg-red-500/10 dark:border-red-500/50"
-            : "border-border focus:border-primary focus:ring-primary bg-background"
+          ? "border-red-300 focus:border-red-500 focus:ring-red-500 bg-red-50/30 dark:bg-red-500/10 dark:border-red-500/50"
+          : "border-border focus:border-primary focus:ring-primary bg-background"
           } px-4 py-3 text-sm text-foreground placeholder:text-muted/70 shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 resize-y`}
       />
       {error && <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{error.message}</p>}
@@ -95,10 +95,10 @@ function FileUploadBox({ label, accept, multiple, value, onChange, onRemove, err
           handleFiles(e);
         }}
         className={`cursor-pointer rounded-lg border-2 border-dashed p-8 flex flex-col items-center justify-center gap-2 transition-colors text-center select-none ${error
-            ? "border-red-300 bg-red-50/40 dark:bg-red-500/10 dark:border-red-500/50"
-            : isDragging
-              ? "border-primary bg-primary/5"
-              : "border-border bg-background hover:border-primary/50 hover:bg-primary/5"
+          ? "border-red-300 bg-red-50/40 dark:bg-red-500/10 dark:border-red-500/50"
+          : isDragging
+            ? "border-primary bg-primary/5"
+            : "border-border bg-background hover:border-primary/50 hover:bg-primary/5"
           }`}
       >
         <p className="text-sm font-medium text-foreground">Choose files or drag &amp; drop</p>
@@ -666,8 +666,8 @@ export default function ProductRegistrationForm() {
                         onChange={(e) => handleSerialNumberChange(index, e.target.value)}
                         placeholder={`Serial number ${index + 1}`}
                         className={`w-full min-h-[44px] rounded-lg border ${serialNumberErrors[index]
-                            ? "border-red-300 focus:border-red-500 focus:ring-red-500 bg-red-50/30 dark:bg-red-500/10 dark:border-red-500/50"
-                            : "border-border focus:border-primary focus:ring-primary bg-background"
+                          ? "border-red-300 focus:border-red-500 focus:ring-red-500 bg-red-50/30 dark:bg-red-500/10 dark:border-red-500/50"
+                          : "border-border focus:border-primary focus:ring-primary bg-background"
                           } px-4 py-3 text-sm text-foreground placeholder:text-muted/70 shadow-sm transition-all duration-200 focus:outline-none focus:ring-2`}
                       />
                       {serialNumberErrors[index] && (

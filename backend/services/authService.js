@@ -15,11 +15,16 @@ export async function generateOtp({ phone, countryCode = "+91" }) {
     throw err;
   }
 
+  // ONE OTP PER PHONE: Before creating a new OTP, delete any existing
+  // OTP records for this phone number. This ensures only ONE OTP document
+  // exists per phone — whether it's a first login, re-login, or resend.
+  await GeneratedOtp.deleteMany({ phone, countryCode });
+
   // Generate 4 digit OTP and 2 minute expiry
   const otp = createOtp();
   const expiresAt = createOtpExpiry();
 
-  // Save to MongoDB
+  // Save the single new OTP to MongoDB
   await GeneratedOtp.create({
     phone,
     countryCode,
@@ -30,7 +35,8 @@ export async function generateOtp({ phone, countryCode = "+91" }) {
   // DO NOT integrate SMS gateway here as requested.
   console.log(`[TESTING ONLY] OTP for ${countryCode} ${phone}: ${otp}`);
 
-  return { success: true, message: "OTP sent successfully." };
+  // Return expiresAt so the frontend can sync its countdown timer to the server clock
+  return { success: true, message: "OTP sent successfully.", expiresAt };
 }
 
 // ─── Verify OTP ───────────────────────────────────────────────────────────────
@@ -64,7 +70,10 @@ export async function verifyOtp({ phone, countryCode = "+91", otp }) {
     throw err;
   }
 
-  // Mark OTP as verified to prevent reuse, but keep the record
+  // Mark OTP as verified to prevent reuse, but keep the record.
+  // IMPORTANT: We do NOT delete the OTP record here.
+  // OTP records are preserved in generatedotps after verification and sign-out.
+  // Only the "Resend OTP" flow (resendOtp function below) deletes old records.
   latestOtpRecord.verified = true;
   await latestOtpRecord.save();
 
@@ -73,6 +82,7 @@ export async function verifyOtp({ phone, countryCode = "+91", otp }) {
   let isNewUser = false;
 
   if (!user) {
+    // Brand new user — will be sent to /profile to complete their details
     isNewUser = true;
     user = await User.create({
       phone,
@@ -87,11 +97,16 @@ export async function verifyOtp({ phone, countryCode = "+91", otp }) {
   const safeUser = cleanUser(user);
   const token = await createToken(safeUser);
 
+  // Return profileCompleted so frontend can decide:
+  //   existing user with completed profile → dashboard
+  //   existing user without completed profile → profile page
+  //   new user → profile page
   return { success: true, safeUser, token, isNewUser, message: "Logged in successfully." };
 }
 
 // ─── Resend OTP ───────────────────────────────────────────────────────────────
 export async function resendOtp({ phone, countryCode = "+91" }) {
-  // We can just reuse generateOtp since it creates a new record
+  // generateOtp already handles deleting old records and creating a new one,
+  // so resend simply calls generateOtp — no extra cleanup needed here.
   return generateOtp({ phone, countryCode });
 }

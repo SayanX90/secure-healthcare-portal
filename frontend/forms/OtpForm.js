@@ -6,11 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import Alert from "@/ui/Alert";
 import Button from "@/ui/Button";
 
-const featureCards = [
-  { title: "24/7", text: "Care access" },
-  { title: "JWT", text: "Secure login" },
-  { title: "Role", text: "Based access" },
-];
+
 
 // UI component for OTP verification – uses the SAME card layout as AuthForm.
 export default function OtpForm() {
@@ -26,24 +22,34 @@ export default function OtpForm() {
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
 
-  // Countdown timer (2 minutes)
+
+  // On resend, this gets updated with the new expiresAt from the server response.
+  const [expiresAt, setExpiresAt] = useState(() => Date.now() + 2 * 60 * 1000);
+
+  // Countdown timer that syncs with the server's expiresAt timestamp.
+  // Instead of a simple decrement (which drifts over time), we recalculate
+  // the remaining seconds from the actual expiry time every second.
   const [timeLeft, setTimeLeft] = useState(120);
 
   useEffect(() => {
-    let timer;
-    if (timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft((current) => {
-          if (current <= 1) {
-            clearInterval(timer);
-            return 0;
-          }
-          return current - 1;
-        });
-      }, 1000);
+    // Immediately calculate how much time is left based on the server timestamp
+    function calcRemaining() {
+      return Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
     }
+
+    // Set the initial value right away
+    setTimeLeft(calcRemaining());
+
+    // Update every second — each tick recalculates from the real expiry,
+    // so even if a tick is delayed (e.g. tab was in background), it stays accurate
+    const timer = setInterval(() => {
+      const remaining = calcRemaining();
+      setTimeLeft(remaining);
+      if (remaining <= 0) clearInterval(timer);
+    }, 1000);
+
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, [expiresAt]); // Re-run whenever expiresAt changes (e.g. after resend)
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -94,16 +100,21 @@ export default function OtpForm() {
       if (!response.ok) {
         setError(data.message || "Unable to verify OTP.");
         if (data.message === "OTP mismatch" || data.message === "OTP expired. Please resend OTP.") {
-          setTimeLeft(0);
+          // OTP MISMATCH FIX: Immediately stop the countdown timer and show 0:00.
+          setExpiresAt(Date.now());
         }
         return;
       }
 
       setSuccess("Logged in successfully!");
       setTimeout(() => {
-        if (data.isNewUser) {
+        // ISSUE 2 FIX: Decide where to send the user after OTP verification.
+        // - New user (isNewUser=true) → always goes to /profile to complete their details
+        if (data.isNewUser || !data.user.profileCompleted) {
+          // New user OR existing user who hasn't completed profile → profile page
           router.replace("/profile");
         } else {
+          // Existing user with completed profile → their home page
           const homePage = data.user.role === "admin" ? "/admin" : "/dashboard";
           router.replace(searchParams.get("next") || homePage);
         }
@@ -136,7 +147,17 @@ export default function OtpForm() {
       }
 
       setSuccess("OTP resent successfully.");
-      setTimeLeft(120);
+
+      // ISSUE 4 FIX: Use the server-provided expiresAt timestamp to reset the timer.
+      // This ensures the countdown is perfectly synced with the actual OTP expiry
+      // in the database, rather than relying on an imprecise local 120-second reset.
+      if (data.expiresAt) {
+        setExpiresAt(new Date(data.expiresAt).getTime());
+      } else {
+        // Fallback: if server didn't send expiresAt, use 2 minutes from now
+        setExpiresAt(Date.now() + 2 * 60 * 1000);
+      }
+
       setOtp(["", "", "", ""]);
     } catch {
       setError("Network error. Please try again.");

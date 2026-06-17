@@ -15,7 +15,8 @@ export async function sendOtpHandler(request) {
     }
 
     const result = await generateOtp({ phone, countryCode: "+91" });
-    return NextResponse.json({ success: true, message: result.message }, { status: 200 });
+    // Include expiresAt so the frontend timer can sync to the server's OTP expiry time
+    return NextResponse.json({ success: true, message: result.message, expiresAt: result.expiresAt }, { status: 200 });
 
   } catch (error) {
     return NextResponse.json({ message: error.message || "Unable to send OTP." }, { status: error.status || 500 });
@@ -52,7 +53,8 @@ export async function resendOtpHandler(request) {
     }
 
     const result = await resendOtp({ phone, countryCode: "+91" });
-    return NextResponse.json({ success: true, message: result.message }, { status: 200 });
+    // Include expiresAt so the frontend timer resets using the server's new OTP expiry time
+    return NextResponse.json({ success: true, message: result.message, expiresAt: result.expiresAt }, { status: 200 });
 
   } catch (error) {
     return NextResponse.json({ message: error.message || "Unable to resend OTP." }, { status: error.status || 500 });

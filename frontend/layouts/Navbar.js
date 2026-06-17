@@ -54,7 +54,7 @@ export default function Navbar({ user, onMenuToggle }) {
             </svg>
           </div>
           <span className="hidden text-lg font-bold tracking-tight text-foreground sm:block">
-            Home Healthcare Services
+            MEDENDRIYO HEALTHCARE PVT. LTD.
           </span>
         </Link>
       </div>
@@ -84,11 +84,7 @@ export default function Navbar({ user, onMenuToggle }) {
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 overflow-hidden text-sm font-bold text-primary hover:ring-2 hover:ring-primary/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary"
             title="View Profile"
           >
-            {user.profileImage ? (
-              <img src={user.profileImage} alt={user.name} className="h-full w-full object-cover" />
-            ) : (
-              initials
-            )}
+            {initials}
           </button>
 
           {/* Profile Dropdown Card */}
@@ -96,11 +92,7 @@ export default function Navbar({ user, onMenuToggle }) {
             <div className="absolute right-0 top-12 mt-2 w-72 rounded-xl border border-border bg-card p-4 shadow-xl z-50 animate-in fade-in slide-in-from-top-2">
               <div className="flex flex-col items-center gap-3 pb-4 border-b border-border">
                 <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden text-xl font-bold text-primary ring-2 ring-primary/20">
-                  {user.profileImage ? (
-                    <img src={user.profileImage} alt={user.name} className="h-full w-full object-cover" />
-                  ) : (
-                    initials
-                  )}
+                  {initials}
                 </div>
                 <div className="text-center">
                   <p className="font-semibold text-foreground text-base">{user.name}</p>
@@ -118,14 +110,14 @@ export default function Navbar({ user, onMenuToggle }) {
                   <span className="font-medium text-foreground">{user.age ? `${user.age} yrs` : "Not set"}</span>
                 </div>
                 <div className="flex flex-col gap-1 mt-2">
-                  <span className="text-muted">Address</span>
-                  <span className="font-medium text-foreground text-xs leading-relaxed">{user.address || "Not set"}</span>
+                  <span className="text-muted">Organization Name</span>
+                  <span className="font-medium text-foreground text-xs leading-relaxed">{user.organizationName || "Not set"}</span>
                 </div>
               </div>
               
               <div className="pt-3 border-t border-border flex flex-col gap-2">
                 <Link 
-                  href="/profile" 
+                  href="/profile/edit" 
                   onClick={() => setIsProfileOpen(false)}
                   className="w-full text-center py-2 text-sm font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors"
                 >

@@ -34,10 +34,40 @@ const userSchema = new mongoose.Schema(
       trim: true,
       maxlength: 500,
     },
-    profileImage: {
+
+    // ─── Personal Information (added for profile system) ────────────────────────
+    personalEmail: {
       type: String,
-      default: "",
+      trim: true,
+      lowercase: true,
     },
+    designation: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+    },
+
+    // ─── Organization Information (added for profile system) ────────────────────
+    organizationName: {
+      type: String,
+      trim: true,
+      maxlength: 200,
+    },
+    organizationEmail: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
+    organizationPhone: {
+      type: String,
+      trim: true,
+    },
+    organizationAddress: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
+
     profileCompleted: {
       type: Boolean,
       default: false,

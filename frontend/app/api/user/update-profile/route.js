@@ -3,7 +3,7 @@ import { connectDB } from "@/backend/database/connection/db";
 import User from "@/backend/database/models/User";
 import { getCurrentUser } from "@/backend/utils/session";
 import { createToken, cookieSettings, AUTH_COOKIE, cleanUser } from "@/backend/utils/auth";
-import { sendWelcomeEmail } from "@/backend/services/email/sendWelcomeEmail";
+
 export async function POST(request) {
   try {
     const userSession = await getCurrentUser();
@@ -52,7 +52,7 @@ export async function POST(request) {
         organizationEmail,
         organizationPhone,
         organizationAddress,
-        profileCompleted: true,
+        // Don't modify profileCompleted, it should already be true
       },
       { new: true, runValidators: true }
     );
@@ -61,15 +61,7 @@ export async function POST(request) {
       return NextResponse.json({ message: "User not found." }, { status: 404 });
     }
 
-    // Send welcome email asynchronously if this is their first time completing the profile
-    if (!userSession.profileCompleted && updatedUser.personalEmail) {
-      // Fire and forget to not block the request
-      sendWelcomeEmail(updatedUser.personalEmail, updatedUser.name).catch((err) => 
-        console.error("Error triggering welcome email:", err)
-      );
-    }
-
-    // Generate a fresh token with updated details (like name and profileCompleted status)
+    // Generate a fresh token with updated details
     const safeUser = cleanUser(updatedUser);
     const token = await createToken(safeUser);
 

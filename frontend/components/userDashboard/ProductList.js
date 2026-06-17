@@ -1,19 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import { Package, Calendar, Search, CheckCircle2, X, Clock, Eye, FileText } from "lucide-react";
 import Link from "next/link";
+import {
+  Package,
+  Calendar,
+  Search,
+  CheckCircle2,
+  X,
+  Clock,
+  Eye,
+} from "lucide-react";
 
+/**
+ * ============================================================================
+ * HELPER FUNCTIONS
+ * ============================================================================
+ */
+
+/**
+ * formatDate: Takes a date string from the database and makes it readable.
+ * Example: "2026-05-31T00:00:00.000Z" becomes "May 31, 2026"
+ */
 function formatDate(dateString) {
   if (!dateString) return "N/A";
+
+  const date = new Date(dateString);
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
-  }).format(new Date(dateString));
+  }).format(date);
 }
 
+/**
+ * StatusBadge: A tiny component that shows a colored pill/badge
+ * based on whether the product is Approved (Green), Pending (Yellow), or Rejected (Red).
+ */
 function StatusBadge({ status }) {
   if (status === "approved") {
     return (
@@ -22,6 +45,7 @@ function StatusBadge({ status }) {
       </span>
     );
   }
+
   if (status === "rejected") {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
@@ -29,6 +53,8 @@ function StatusBadge({ status }) {
       </span>
     );
   }
+
+  // If not approved or rejected, default to pending
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
       <Clock className="h-3.5 w-3.5" /> Pending
@@ -36,126 +62,84 @@ function StatusBadge({ status }) {
   );
 }
 
-function ProductModal({ product, isOpen, onClose }) {
-  if (!isOpen || !product) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={onClose} />
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50/50">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
-              <Package className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-slate-900">Registration Details</h2>
-              <p className="text-xs text-slate-500">Submitted on {formatDate(product.createdAt)}</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="rounded-full p-2 hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="overflow-y-auto max-h-[80vh] p-4 sm:p-6 space-y-4 scroll-smooth">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3">Product</h3>
-              <div className="space-y-3 text-sm">
-                <div><span className="font-semibold text-slate-700 block">Name:</span> <span className="text-slate-600">{product.productName}</span></div>
-                <div><span className="font-semibold text-slate-700 block">Model:</span> <span className="text-slate-600">{product.productModel}</span></div>
-                <div><span className="font-semibold text-slate-700 block">Quantity:</span> <span className="text-slate-600">{product.quantity}</span></div>
-                <div><span className="font-semibold text-slate-700 block">Serial Numbers:</span> <span className="text-slate-600">{product.serialNumbers?.join(", ")}</span></div>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3">Warranty & Status</h3>
-              <div className="space-y-3 text-sm">
-                <div><span className="font-semibold text-slate-700 block">Status:</span> <StatusBadge status={product.status} /></div>
-                <div><span className="font-semibold text-slate-700 block">Period:</span> <span className="text-slate-600">{formatDate(product.warrantyFrom)} – {formatDate(product.warrantyTo)}</span></div>
-                <div><span className="font-semibold text-slate-700 block">Invoice:</span> <span className="text-slate-600">{product.invoiceNumber}</span></div>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3">Documents & Photos</h3>
-            <div className="space-y-2">
-              {product.installationCopyUrl ? (
-                <a href={product.installationCopyUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-2 rounded-lg font-medium transition-colors w-max">
-                  <FileText className="h-4 w-4" /> View Installation Copy
-                </a>
-              ) : <span className="text-sm text-slate-400 italic block">No installation copy uploaded</span>}
-              
-              {product.invoiceCopyUrl ? (
-                <a href={product.invoiceCopyUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-2 rounded-lg font-medium transition-colors w-max">
-                  <FileText className="h-4 w-4" /> View Invoice Copy
-                </a>
-              ) : <span className="text-sm text-slate-400 italic block">No invoice copy uploaded</span>}
-            </div>
-
-            {product.installationPhotosUrls?.length > 0 && (
-              <div className="mt-4">
-                <span className="font-semibold text-slate-700 text-sm block mb-2">Installation Photos ({product.installationPhotosUrls.length})</span>
-                <div className="flex gap-2 overflow-x-auto pb-2">
-                  {product.installationPhotosUrls.map((url, idx) => (
-                    <a key={idx} href={url} target="_blank" rel="noreferrer" className="shrink-0">
-                      <Image src={url} alt={`Install ${idx}`} width={64} height={64} className="object-cover rounded-lg border border-slate-200 hover:border-indigo-400 transition-colors" />
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// UI component for the user's product list.
+/**
+ * ============================================================================
+ * MAIN COMPONENT: PRODUCT LIST
+ * ============================================================================
+ * 
+ * This component displays the list of products a user has registered.
+ * It handles the search bar, the status filter, and shows either a table (on PC)
+ * or a list of cards (on mobile phones).
+ * 
+ * Props:
+ * - products: An array (list) of product objects fetched from the database.
+ */
 export default function ProductList({ products }) {
-  const [search, setSearch]           = useState("");
+  // ------------------------------------------------------------------------
+  // 1. STATE VARIABLES (Memory for this component)
+  // ------------------------------------------------------------------------
+  
+  // What the user has typed into the search box
+  const [searchText, setSearchText] = useState("");
+
+  // What the user has selected in the dropdown (e.g., "all", "approved", "pending")
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const filtered = products.filter(
-    (p) =>
-      (p.productName.toLowerCase().includes(search.toLowerCase()) ||
-       p.serialNumbers?.some(sn => sn.toLowerCase().includes(search.toLowerCase()))) &&
-      (statusFilter === "all" || p.status === statusFilter)
-  );
+  // ------------------------------------------------------------------------
+  // 2. FILTERING LOGIC
+  // ------------------------------------------------------------------------
+  
+  // We don't want to show ALL products if the user is searching or filtering.
+  // We create a new, smaller list called `filteredProducts` based on the search/filter.
+  const filteredProducts = products.filter((product) => {
+    // A. Check if it matches the SEARCH BOX
+    const lowerSearch = searchText.toLowerCase();
+    const nameMatches = product.productName.toLowerCase().includes(lowerSearch);
+    
+    // Check if any of the serial numbers match the search
+    const serialMatches = product.serialNumbers?.some((sn) =>
+      sn.toLowerCase().includes(lowerSearch)
+    );
+    const matchesSearch = nameMatches || serialMatches;
 
+    // B. Check if it matches the DROPDOWN FILTER
+    const matchesStatus = statusFilter === "all" || product.status === statusFilter;
+
+    // It must match BOTH the search box AND the dropdown to be shown
+    return matchesSearch && matchesStatus;
+  });
+
+
+  // ------------------------------------------------------------------------
+  // 3. RENDER UI
+  // ------------------------------------------------------------------------
   return (
     <>
-      <ProductModal
-        product={selectedProduct}
-        isOpen={!!selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-      />
+      {/* Main card container holding everything */}
       <div className="rounded-2xl border border-border bg-gradient-to-b from-white to-[#F8FAFC] dark:bg-none dark:bg-card shadow-sm">
+        
+        {/* --- Top Bar: Search Input, Filter Dropdown, Register Button --- */}
         <div className="flex flex-col gap-3 border-b border-border p-6 md:flex-row md:items-center md:justify-between">
+          
+          {/* Search Input */}
           <div className="relative w-full md:w-96">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
             <input
               type="text"
               id="my-products-search"
               placeholder="Search products or serial numbers..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)} // Update state when user types
               className="h-10 w-full rounded-lg border border-border bg-background pl-10 pr-4 text-sm text-foreground focus-ring transition-colors"
             />
           </div>
+
+          {/* Filter Dropdown + Register New Button */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <select
               id="my-products-status-filter"
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => setStatusFilter(e.target.value)} // Update state when user selects an option
               className="h-10 w-full sm:w-auto rounded-lg border border-border bg-background px-3 text-sm text-foreground focus-ring transition-colors"
             >
               <option value="all">All Status</option>
@@ -163,6 +147,7 @@ export default function ProductList({ products }) {
               <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
             </select>
+
             <Link
               href="/dashboard/products/register"
               className="inline-flex h-10 w-full sm:w-auto items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 shadow-sm"
@@ -172,51 +157,67 @@ export default function ProductList({ products }) {
           </div>
         </div>
 
-        {filtered.length === 0 ? (
+        {/* --- Middle Area: The actual list of products --- */}
+        
+        {/* Scenario A: No products found (either empty list, or search didn't match anything) */}
+        {filteredProducts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-black/5 dark:bg-white/5 mb-4">
               <Package className="h-8 w-8 text-muted" />
             </div>
-            <h3 className="text-lg font-bold text-foreground">No products found</h3>
+            <h3 className="text-lg font-bold text-foreground">
+              No products found
+            </h3>
             <p className="mt-1 text-sm text-muted max-w-md">
-              {products.length === 0 
+              {products.length === 0
                 ? "You haven't registered any products yet."
                 : "No products match your search criteria."}
             </p>
           </div>
         ) : (
+          
+          /* Scenario B: We found products, so show them! */
           <>
-            {/* ── Mobile Card View ── */}
+            {/* 1. Mobile View (Cards) - Hidden on PC */}
             <div className="block sm:hidden divide-y divide-border">
-              {filtered.map((p) => (
-                <div key={p._id} className="flex flex-col gap-2 p-4">
+              {filteredProducts.map((product) => (
+                <div key={product._id} className="flex flex-col gap-2 p-4">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="font-bold text-foreground text-sm">{p.productName}</p>
-                      <p className="text-xs text-muted">Model: {p.productModel}</p>
+                      <p className="font-bold text-foreground text-sm">
+                        {product.productName}
+                      </p>
+                      <p className="text-xs text-muted">
+                        Model: {product.productModel}
+                      </p>
                     </div>
-                    <StatusBadge status={p.status} />
+                    <StatusBadge status={product.status} />
                   </div>
+
                   <div className="flex items-center gap-1.5 text-xs text-muted">
                     <Calendar className="h-3.5 w-3.5 shrink-0" />
-                    {formatDate(p.warrantyFrom)} – {formatDate(p.warrantyTo)}
+                    {formatDate(product.warrantyFrom)} –{" "}
+                    {formatDate(product.warrantyTo)}
                   </div>
-                  {p.serialNumbers?.length > 0 && (
+
+                  {product.serialNumbers?.length > 0 && (
                     <p className="text-xs text-muted truncate">
-                      S/N: {p.serialNumbers.join(", ")}
+                      S/N: {product.serialNumbers.join(", ")}
                     </p>
                   )}
-                  <button
-                    onClick={() => setSelectedProduct(p)}
+
+                  {/* Navigates to our new dedicated Product Details page */}
+                  <Link
+                    href={`/dashboard/products/${product._id}`}
                     className="mt-1 inline-flex items-center gap-1.5 self-start rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground hover:bg-black/5 transition-colors focus-ring min-h-[40px]"
                   >
                     <Eye className="h-3.5 w-3.5" /> View Details
-                  </button>
+                  </Link>
                 </div>
               ))}
             </div>
 
-            {/* ── Desktop Table View ── */}
+            {/* 2. Desktop View (Table) - Hidden on Mobile */}
             <div className="hidden sm:block overflow-x-auto w-full">
               <table className="w-full min-w-[600px] text-left text-sm text-muted">
                 <thead className="bg-black/[0.02] dark:bg-white/[0.02] text-xs uppercase text-foreground whitespace-nowrap">
@@ -229,34 +230,46 @@ export default function ProductList({ products }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border whitespace-nowrap">
-                  {filtered.map((p) => (
+                  {filteredProducts.map((product) => (
                     <tr
-                      key={p._id}
+                      key={product._id}
                       className="transition-colors even:bg-black/[0.02] dark:even:bg-white/[0.02] hover:bg-black/5 dark:hover:bg-white/5 group"
                     >
                       <td className="px-6 py-4">
-                        <div className="font-bold text-foreground">{p.productName}</div>
-                        <div className="text-xs">Model: {p.productModel}</div>
+                        <div className="font-bold text-foreground">
+                          {product.productName}
+                        </div>
+                        <div className="text-xs">
+                          Model: {product.productModel}
+                        </div>
                       </td>
+
                       <td className="px-6 py-4">
-                        <div className="font-medium text-foreground">{p.serialNumbers?.join(", ")}</div>
+                        <div className="font-medium text-foreground">
+                          {product.serialNumbers?.join(", ")}
+                        </div>
                       </td>
+
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-1.5 text-xs text-foreground">
                           <Calendar className="h-3.5 w-3.5 text-muted" />
-                          {formatDate(p.warrantyFrom)} - {formatDate(p.warrantyTo)}
+                          {formatDate(product.warrantyFrom)} -{" "}
+                          {formatDate(product.warrantyTo)}
                         </div>
                       </td>
+
                       <td className="px-6 py-4">
-                        <StatusBadge status={p.status} />
+                        <StatusBadge status={product.status} />
                       </td>
+
                       <td className="px-6 py-4">
-                        <button
-                          onClick={() => setSelectedProduct(p)}
+                        {/* Navigates to our new dedicated Product Details page */}
+                        <Link
+                          href={`/dashboard/products/${product._id}`}
                           className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors focus-ring"
                         >
                           <Eye className="h-3.5 w-3.5" /> View
-                        </button>
+                        </Link>
                       </td>
                     </tr>
                   ))}

@@ -47,6 +47,13 @@ export function cleanUser(user) {
     isVerified: user.isVerified,
     isApproved: user.isApproved,
     profileCompleted: user.profileCompleted,
-    profileImage: user.profileImage,
+    // New profile fields added for Personal & Organization Information
+    personalEmail: user.personalEmail,
+    designation: user.designation,
+    employeeId: user.employeeId,
+    organizationName: user.organizationName,
+    organizationEmail: user.organizationEmail,
+    organizationPhone: user.organizationPhone,
+    organizationAddress: user.organizationAddress,
   };
 }

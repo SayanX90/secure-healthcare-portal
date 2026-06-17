@@ -9,7 +9,7 @@ export default function AuthLayout({ children }) {
             </div>
             <div>
               <span className="block text-sm sm:text-base font-bold tracking-wide text-emerald-950 uppercase">
-                Home Healthcare Services Company
+                MEDENDRIYO HEALTHCARE PVT. LTD.
               </span>
               <span className="block text-xs sm:text-[15px] text-emerald-800 font-medium mt-0.5">
                 Secure care management portal
@@ -32,25 +32,6 @@ export default function AuthLayout({ children }) {
               </p>
             </div>
 
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-              {[
-                { title: "24/7", text: "Care access" },
-                { title: "JWT", text: "Secure login" },
-                { title: "Role", text: "Based access" },
-              ].map((card) => (
-                <div
-                  key={card.title}
-                  className="flex flex-col items-center text-center rounded-2xl border border-emerald-100 bg-white p-4 shadow-lg shadow-emerald-900/20"
-                >
-                  <span className="text-lg sm:text-xl font-bold text-emerald-600 mb-1">
-                    {card.title}
-                  </span>
-                  <span className="text-sm font-medium text-slate-500">
-                    {card.text}
-                  </span>
-                </div>
-              ))}
-            </div>
           </section>
 
           {/* This is where the right-side form content goes */}

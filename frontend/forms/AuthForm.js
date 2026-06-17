@@ -7,11 +7,7 @@ import Alert from "@/ui/Alert";
 import Button from "@/ui/Button";
 import Input from "@/ui/Input";
 
-const featureCards = [
-  { title: "24/7", text: "Care access" },
-  { title: "JWT", text: "Secure login" },
-  { title: "Role", text: "Based access" },
-];
+
 
 // UI component for phone number login.
 export default function AuthForm() {

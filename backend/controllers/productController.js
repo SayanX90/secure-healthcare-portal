@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { registerProduct, getMyProducts, getAllProducts, updateProductStatus } from "@/backend/services/productService";
 import { requireAuth, requireAdmin } from "@/backend/middleware/routeGuards";
+import { sendProductRegistrationEmail } from "@/backend/services/email/sendProductRegistrationEmail";
 // Controller file: handles requests and calls product services.
 
 // ─── POST /api/products/register ─────────────────────────────────────────────
@@ -17,6 +18,17 @@ export async function registerProductHandler(request) {
     }
 
     const product = await registerProduct(body, user.id);
+    
+    if (user.personalEmail) {
+      sendProductRegistrationEmail(
+        user.personalEmail,
+        user.name,
+        product.productName,
+        product.productModel,
+        product.serialNumbers.join(", ")
+      ).catch((err) => console.error("Error sending product registration email:", err));
+    }
+
     return NextResponse.json({ message: "Product registered successfully.", product }, { status: 201 });
   } catch (error) {
     if (error.name === "ValidationError") {

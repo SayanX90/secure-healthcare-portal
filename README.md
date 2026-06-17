@@ -1,6 +1,6 @@
-# 🏥 Home Healthcare Services Portal
+# Secure Healthcare Portal
 
-A **secure, full-stack** healthcare web app built with **Next.js**, **MongoDB**, and **JWT authentication**.
+This project contains the frontend and backend structures for the Secure Healthcare Portal. Below is the full directory structure with simple, easy-to-understand explanations for each folder and file.
 
 ---
 
@@ -8,7 +8,7 @@ A **secure, full-stack** healthcare web app built with **Next.js**, **MongoDB**,
 
 This app has **no passwords** — login is done using your **phone number + OTP**.
 
-```text
+```
 You enter your phone number
         ↓
 App generates a 4-digit OTP
@@ -26,276 +26,258 @@ Token is saved in your browser as a cookie 🍪
 Every future page visit → cookie is sent automatically → you're logged in
 ```
 
-**Two auth folders (don't get confused!):**
+---
+
+## 📁 Two Auth Folders (Don't Get Confused!)
+
+```
+app/(auth)/        →  The PAGES you see in the browser
+                       Example: /login, /verify-otp
+                       (The () hides it from the URL)
+
+        ⇅
+
+app/api/auth/      →  The HIDDEN logic behind those pages
+                       Example: /api/auth/send-otp, /api/auth/logout
+                       (No UI — just receives data & returns JSON)
+```
+
+> **Think of it this way:**
+> `app/(auth)/` is the **shop front** (what users see).
+> `app/api/auth/` is the **back office** (where the real work happens).
+
+---
+
+## Frontend Directory Structure
 
 ```text
-app/(auth)/          → The PAGES you see in the browser
-                        Example: /login, /verify-otp
-                        (The () hides it from the URL)
-        ↕
-app/api/auth/        → The HIDDEN logic behind those pages
-                        Example: /api/auth/send-otp, /api/auth/logout
-                        (No UI — just receives data & returns JSON)
+frontend/                 -> Root Frontend Directory
+|
+├── app/                  -> Main Next.js App Router Folder
+|   |
+|   ├── (auth)/           -> Auth Route Group (Login/OTP)
+|   |   ├── login/
+|   |   |   └── page.js   -> Login Page UI
+|   |   |
+|   |   └── verify-otp/
+|   |       └── page.js   -> OTP Verification Page UI
+|   |
+|   ├── admin/            -> Admin Pages
+|   |   ├── products/
+|   |   |   └── page.js   -> Admin Products Page
+|   |   |
+|   |   ├── loading.js    -> Admin Loading UI
+|   |   └── page.js       -> Admin Dashboard UI
+|   |
+|   ├── api/              -> Backend API Routes
+|   |   |
+|   |   ├── admin/        -> Backend Endpoints for Admins
+|   |   |   ├── route.js              -> Get All Admin Info
+|   |   |   ├── approve/
+|   |   |   |   └── [id]/
+|   |   |   |       └── route.js      -> Approve Product by ID
+|   |   |   |
+|   |   |   ├── products/
+|   |   |   |   ├── route.js          -> Get All Products (Admin)
+|   |   |   |   └── [id]/
+|   |   |   |       └── route.js      -> Manage Single Product by ID
+|   |   |   |
+|   |   |   └── users/
+|   |   |       ├── route.js          -> Get All Users (Admin)
+|   |   |       └── [id]/
+|   |   |           └── route.js      -> Manage Single User by ID
+|   |   |
+|   |   ├── auth/         -> Backend Endpoints for Auth
+|   |   |   ├── logout/
+|   |   |   |   └── route.js          -> Logout User
+|   |   |   ├── me/
+|   |   |   |   └── route.js          -> Get Current Session User
+|   |   |   ├── resend-otp/
+|   |   |   |   └── route.js          -> Resend OTP to Email
+|   |   |   ├── send-otp/
+|   |   |   |   └── route.js          -> Send OTP to Email
+|   |   |   └── verify-otp/
+|   |   |       └── route.js          -> Verify OTP Code
+|   |   |
+|   |   ├── dashboard/    -> Backend Endpoints for Dashboard
+|   |   |   └── route.js              -> Get Dashboard Stats
+|   |   |
+|   |   ├── products/     -> Backend Endpoints for Products
+|   |   |   ├── my/
+|   |   |   |   └── route.js          -> Get Current User's Products
+|   |   |   └── register/
+|   |   |       └── route.js          -> Register a New Product
+|   |   |
+|   |   ├── upload/       -> Backend Endpoints for Uploads
+|   |   |   ├── route.js              -> Upload Product Image
+|   |   |   └── service-images/
+|   |   |       └── route.js          -> Upload Service Images
+|   |   |
+|   |   ├── user/         -> Backend Endpoints for Single User
+|   |   |   ├── create-profile/
+|   |   |   |   └── route.js          -> Create User Profile
+|   |   |   └── update-profile/
+|   |   |       └── route.js          -> Update User Profile
+|   |   |
+|   |   ├── users/        -> Backend Endpoints for All Users
+|   |   |   └── route.js              -> Get All Users
+|   |   |
+|   |   ├── bookservice/  -> Backend Endpoints for Book a Service
+|   |       └── route.js              -> Handle Book a Service Requests
+|   |   |
+|   |   └── requests/     -> Backend Endpoints for Service Requests
+|   |       └── my/
+|   |           └── route.js          -> Get Current User's Service Requests
+|   |
+|   ├── dashboard/        -> User Dashboard Pages
+|   |   ├── products/
+|   |   |   ├── [id]/
+|   |   |   |   └── page.js -> Product Details UI
+|   |   |   |
+|   |   |   ├── register/
+|   |   |   |   └── page.js -> Product Registration UI
+|   |   |   |
+|   |   |   └── page.js   -> My Products UI
+|   |   |
+|   |   ├── requests/     -> Service Requests Pages
+|   |   |   ├── [id]/
+|   |   |   |   └── page.js -> Request Details UI
+|   |   |   |
+|   |   |   └── page.js   -> My Requests UI
+|   |   |
+|   |   ├── page.js       -> User Dashboard UI
+|   |   └── loading.js    -> Dashboard Loading UI
+|   |
+|   ├── profile/          -> User Profile Pages
+|   |   ├── edit/
+|   |   |   └── page.js   -> Edit Profile UI
+|   |   |
+|   |   └── page.js       -> View Profile UI
+|   |
+|   ├── error.js          -> Global Error UI
+|   ├── layout.js         -> Global App Layout
+|   ├── loading.js        -> Global Loading UI
+|   └── page.js           -> Landing Page UI
+|
+├── components/           -> Reusable UI Components
+|   ├── adminDashboard/   -> Admin Specific Components
+|   |   ├── AdminPage.js
+|   |   ├── AdminStats.js
+|   |   ├── InfoCard.js
+|   |   ├── ProductsPage.js
+|   |   └── ThemeProvider.js
+|   |
+|   └── userDashboard/    -> User Specific Components
+|       ├── BookServiceModal.js
+|       ├── DashboardCards.js
+|       ├── DashboardHeader.js
+|       ├── DashboardPage.js
+|       ├── DashboardRoute.js
+|       ├── ProductDetailsClient.js
+|       ├── ProductList.js
+|       ├── ProductsPage.js
+|       ├── RequestDetailsClient.js
+|       ├── RequestList.js
+|       └── SearchBar.js
+|
+├── forms/                -> Form Components
+|   ├── AuthForm.js       -> Login Form
+|   ├── OtpForm.js        -> OTP Form
+|   ├── ProductRegistrationForm.js -> Register Product Form
+|   └── ProfileForm.js    -> Edit Profile Form
+|
+├── layouts/              -> Page Wrapper Layouts
+|   ├── MainLayout.js     -> Main Container
+|   ├── Navbar.js         -> Top Navigation
+|   └── Sidebar.js        -> Side Navigation
+|
+├── styles/               -> Global CSS Styles
+|   └── globals.css       -> Tailwind & Global CSS
+|
+├── tables/               -> Data Table Components
+|   ├── adminTables/      -> Tables for Admins
+|   |   ├── UserFilters.js
+|   |   ├── UserPagination.js
+|   |   ├── UserRow.js
+|   |   └── UsersTable.js
+|   |
+|   └── userTables/       -> Tables for Users
+|       ├── ProductFilters.js
+|       ├── ProductPagination.js
+|       ├── ProductRow.js
+|       └── ProductsTable.js
+|
+├── ui/                   -> Basic UI Elements
+|   ├── Alert.js
+|   ├── AuthLayout.js
+|   ├── Button.js
+|   ├── ErrorBox.js
+|   ├── Input.js
+|   ├── Loader.js
+|   └── ThemeToggle.js
+|
+├── middleware.js         -> Route Protection Logic
+├── next.config.js        -> Next.js Settings
+├── jsconfig.json         -> JS Path Aliases
+├── tailwind.config.js    -> Tailwind Settings
+├── postcss.config.js     -> PostCSS Settings
+├── package.json          -> Project Dependencies
+└── .eslintrc.json        -> ESLint Rules
 ```
 
----
-
-## 🔑 How JWT Works
-
-JWT = a **digital wristband** the server gives you after login.
-You show it on every visit — no need to log in again.
+## Backend Directory Structure
 
 ```text
-You log in (OTP verified)
-        ↓
-Server creates a JWT token with 3 parts:
-
-eyJhbGci...    ← Part 1: Header    — which algorithm signed it (HS256)
-.eyJpZCI6...   ← Part 2: Payload   — YOUR info (id, name, role)
-.abc123xyz     ← Part 3: Signature — tamper-proof seal
-        ↓
-Token is stored in a cookie named: auth_token
-        ↓
-🔒 HttpOnly  → JavaScript can't read it (safe from hackers)
-⏱️ Expires   → After 1 day, you must log in again
-🚪 Session   → Cookie is deleted when the browser closes
+backend/                  -> Root Backend Directory
+|
+├── config/               -> Configuration Files
+|   └── cloudinary.js     -> Cloudinary Upload Config
+|
+├── controllers/          -> Business Logic Handlers
+|   ├── adminController.js        -> Handles Admin Logic
+|   ├── authController.js         -> Handles Auth/Login Logic
+|   ├── bookServiceController.js  -> Handles Book a Service Logic
+|   ├── productController.js      -> Handles Product Logic
+|   ├── uploadController.js       -> Handles Upload Logic
+|   └── userController.js         -> Handles User Logic
+|
+├── database/             -> Database Setup
+|   ├── connection/
+|   |   └── db.js         -> MongoDB Connection
+|   |
+|   └── models/           -> Database Schemas
+|       ├── BookService.js   -> Book a Service Schema
+|       ├── GeneratedOtp.js  -> OTP Schema
+|       ├── Product.js       -> Product Schema
+|       └── User.js          -> User Schema
+|
+├── middleware/           -> Request Interceptors
+|   └── routeGuards.js    -> Auth/Role Protection
+|
+├── scripts/              -> Utility Scripts
+|   ├── dropStaleIndexes.js  -> DB Cleanup Script
+|   └── seedAdmin.js         -> Create Initial Admin
+|
+├── services/             -> Reusable Logic Services
+|   ├── authService.js         -> Auth Helper Functions
+|   ├── email/                 -> Email Sending Services
+|   |   ├── sendProductRegistrationEmail.js -> Send Product Registration Email
+|   |   ├── sendServiceRequestEmail.js      -> Send Service Request Email
+|   |   └── sendWelcomeEmail.js             -> Send Welcome Email
+|   |
+|   ├── productService.js      -> Product Helper Functions
+|   ├── serviceRequestService.js -> Service Request Helper Functions
+|   ├── uploadService.js       -> Upload Helper Functions
+|   └── userService.js         -> User Helper Functions
+|
+├── templates/            -> Email HTML Templates
+|   ├── productRegistrationTemplate.js -> Product Registration Email Template
+|   ├── serviceRequestTemplate.js      -> Service Request Email Template
+|   └── welcomeTemplate.js             -> Welcome Email Template
+|
+└── utils/                -> Helper Utilities
+    ├── auth.js           -> JWT/Hash Utilities
+    ├── emailTransporter.js -> Nodemailer SMTP Transporter
+    ├── otp.js            -> OTP Generation
+    └── session.js        -> Session Utilities
 ```
-
----
-
-## 📁 Project Folder Structure
-
----
-
-
-### 1. `frontend/` — UI Components
-
-```text
-frontend/                        ← Everything Next.js (UI, pages)
-├── app/                         
-│   ├── (auth)/                  
-│   │   ├── login/page.js        → /login page (UI)
-│   │   └── verify-otp/page.js   → /verify-otp page (UI)
-│   ├── api/                     
-│   │   ├── admin/               → Backend Endpoints for Admins
-│   │   ├── auth/                → Backend Endpoints for Auth
-│   │   ├── dashboard/           → Backend Endpoints for Dashboard
-│   │   ├── products/            → Backend Endpoints for Products
-│   │   ├── upload/              → Backend Endpoints for Uploads
-│   │   ├── user/                → Backend Endpoints for User
-│   │   └── users/               → Backend Endpoints for Users
-│   ├── admin/                   
-│   │   ├── loading.js           → Loading spinner for /admin
-│   │   ├── page.js              → /admin page (Admin UI)
-│   │   └── products/page.js     → /admin/products page
-│   ├── dashboard/               
-│   │   ├── loading.js           → Loading spinner for /dashboard
-│   │   ├── page.js              → /dashboard page (User UI)
-│   │   └── products/            
-│   │       ├── page.js          → /dashboard/products page
-│   │       └── register/page.js → Register product page
-│   ├── profile/page.js          → /profile page (complete your info)
-│   ├── error.js                 → Global error page
-│   ├── layout.js                → Root HTML wrapper (wraps ALL pages)
-│   ├── loading.js               → Global loading page
-│   └── page.js                  → Home page / (redirects based on role)
-│
-├── components/                  ← Dashboard-specific widgets
-│   ├── adminDashboard/          
-│   │   ├── AdminPage.js         → /admin page content (user list & access)
-│   │   ├── AdminStats.js        → Approval stats chart
-│   │   ├── InfoCard.js          → Stat card (Total Users, Pending…)
-│   │   ├── ProductsPage.js      → /admin/products content
-│   │   └── ThemeProvider.js     → Dark/light mode provider
-│   │
-│   └── userDashboard/           
-│       ├── DashboardCards.js    → Quick action cards
-│       ├── DashboardHeader.js   → Welcome banner
-│       ├── DashboardPage.js     → /dashboard main content
-│       ├── DashboardRoute.js    → Auth check + layout for /dashboard
-│       ├── ProductList.js       → Product list with details
-│       ├── ProductsPage.js      → /dashboard/products content
-│       └── SearchBar.js         → Search input
-│
-├── forms/                       ← Input Forms
-│   ├── AuthForm.js              → Login & Signup form (shared)
-│   ├── OtpForm.js               → OTP verification form
-│   ├── ProductRegistrationForm.js → Register a new product
-│   └── ProfileForm.js           → Complete user profile form
-│
-├── layouts/                     ← Wrappers
-│   ├── MainLayout.js            → Navbar + Sidebar wrapper (used on every page)
-│   ├── Navbar.js                → Top navigation bar
-│   └── Sidebar.js               → Left sidebar menu
-│
-├── tables/                      ← Data Tables
-│   ├── adminTables/             
-│   │   ├── UserFilters.js       → Filter bar for users
-│   │   ├── UserPagination.js    → Page controls for users table
-│   │   ├── UserRow.js           → Single row in users table
-│   │   └── UsersTable.js        → All users table (admin)
-│   │
-│   └── userTables/              
-│       ├── ProductFilters.js    → Filter bar for products
-│       ├── ProductPagination.js → Page controls for products table
-│       ├── ProductRow.js        → Single row in products table
-│       └── ProductsTable.js     → All products table (user)
-│
-├── ui/                          ← Small reusable pieces
-│   ├── Alert.js                 → Alert/notification message
-│   ├── AuthLayout.js            → Centered wrapper for login/OTP pages
-│   ├── Button.js                → Reusable button
-│   ├── ErrorBox.js              → Error message box
-│   ├── Input.js                 → Reusable text input
-│   ├── Loader.js                → Loading spinner
-│   └── ThemeToggle.js           → Dark/light mode toggle
-│
-├── styles/globals.css           → Global CSS for the whole app
-├── middleware.js                → 🔒 Runs before every page — protects routes
-└── next.config.js               → Next.js configuration
-```
-
----
-
-### 2. `backend/` — Server Logic (User Never Sees This)
-
-```text
-backend/                         ← The hidden server logic
-├── controllers/                 ← STEP 1: Handles each request
-│   ├── adminController.js       → Handles user approval & product management
-│   ├── authController.js        → Handles OTP login, logout, who-am-I
-│   ├── productController.js     → Handles register & fetch products
-│   ├── uploadController.js      → Handles image uploads to Cloudinary
-│   └── userController.js        → Handles get/update user profile
-│
-├── services/                    ← STEP 2: Business logic + talks to DB
-│   ├── authService.js           → OTP generation, verification, JWT creation
-│   ├── productService.js        → Create/read products from MongoDB
-│   ├── uploadService.js         → Upload images via Cloudinary
-│   └── userService.js           → Read/update users in MongoDB
-│
-├── database/                    ← STEP 3: MongoDB
-│   ├── connection/db.js         → Connects to MongoDB
-│   └── models/                  
-│       ├── GeneratedOtp.js      → OTP schema (phone, code, expiry)
-│       ├── Product.js           → Product schema
-│       └── User.js              → User schema (name, phone, role…)
-│
-├── middleware/routeGuards.js    → requireAuth() & requireAdmin() helpers
-│
-├── utils/                       
-│   ├── auth.js                  → createToken(), readToken(), cookieSettings()
-│   ├── otp.js                   → generateOtp(), createOtpExpiry()
-│   └── session.js               → getCurrentUser() — reads JWT from cookie
-│
-├── config/cloudinary.js         → Cloudinary setup
-└── scripts/                     
-    ├── dropStaleIndexes.js      → Cleanup script for MongoDB indexes
-    └── seedAdmin.js             → Run ONCE to create first admin user
-```
-
----
-
-### 3. Root Files
-
-```text
-(Project Root)
-├── .env.local                   → 🔑 Secret keys (DB URL, JWT secret) — NEVER share!
-├── .gitignore                   → Files Git should ignore
-├── package-lock.json            → Exact dependency versions (auto-generated)
-└── package.json                 → Run scripts (npm run dev) & workspace config
-```
-
----
-
-## 🔗 How They Connect
-
-```text
-User fills a form (Frontend)
-       ↓  API Route  — just forwards the request
-       ↓  Controller — validates the data
-       ↓  Service    — talks to the database
-       ↓  MongoDB    — saves/reads the data
-```
-
----
-
-## 🌐 How API Routes Work
-
-An API route is just a **bridge** — it has no logic. It receives data from the frontend and passes it straight to a controller.
-
-```javascript
-export async function POST(req) {
-  return sendOtpHandler(req); // just forwards, nothing else
-}
-```
-
-**API Endpoints:**
-
-| Method | URL | What It Does |
-|--------|-----|--------------|
-| `POST` | `/api/auth/send-otp` | Send OTP |
-| `POST` | `/api/auth/verify-otp` | Verify OTP, log in |
-| `POST` | `/api/auth/resend-otp` | Resend OTP |
-| `POST` | `/api/auth/logout` | Log out |
-| `GET`  | `/api/auth/me` | Who is logged in? |
-| `GET`  | `/api/user/...` | User profile (auth required) |
-| `GET/POST` | `/api/products/...` | Product actions |
-| `POST` | `/api/upload/...` | Upload image |
-| `GET/POST` | `/api/admin/...` | Admin only |
-
----
-
-## 🛡️ How Route Protection Works
-
-**Two layers of guards:**
-
-**Layer 1 — `middleware.js`** (runs before every page loads)
-
-| Route | Not Logged In | User | Admin |
-|-------|--------------|------|-------|
-| `/dashboard` | → `/login` | ✅ | → `/admin` |
-| `/admin` | → `/login` | → `/dashboard` | ✅ |
-| `/login` | ✅ | → `/dashboard` | → `/admin` |
-
-**Layer 2 — `routeGuards.js`** (inside controllers, server-side check)
-- `requireAuth()` → blocks if not logged in
-- `requireAdmin()` → blocks if not admin
-
----
-
-## 📂 Quick Folder Guide
-
-| Folder | What It Does |
-|--------|-------------|
-| `frontend/app/(auth)/` | Login & OTP pages |
-| `frontend/app/api/` | All API endpoints |
-| `frontend/components/` | Reusable UI widgets |
-| `frontend/forms/` | Form components |
-| `frontend/layouts/` | Navbar + Sidebar |
-| `frontend/ui/` | Button, Input, Alert… |
-| `frontend/middleware.js` | 🔒 Page protection |
-| `backend/controllers/` | Handle requests |
-| `backend/services/` | Business logic + DB |
-| `backend/database/models/` | MongoDB schemas |
-| `backend/utils/auth.js` | JWT helpers |
-| `backend/utils/session.js` | Get current user |
-| `backend/scripts/seedAdmin.js` | Create first admin |
-| `.env.local` | 🔑 Secret keys |
-
----
-
-## 🚀 URL → Page Reference
-
-| URL | Page | Component |
-|-----|------|-----------|
-| `/login` | Login | `forms/AuthForm.js` |
-| `/verify-otp` | OTP input | `forms/OtpForm.js` |
-| `/dashboard` | User home | `userDashboard/DashboardPage.js` |
-| `/dashboard/products` | My products | `userDashboard/ProductsPage.js` |
-| `/dashboard/products/register` | Register product | `forms/ProductRegistrationForm.js` |
-| `/admin` | Admin panel | `adminDashboard/AdminPage.js` |
-| `/admin/products` | All products | `adminDashboard/ProductsPage.js` |
-
----
-

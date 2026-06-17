@@ -111,8 +111,8 @@ function PremiumCard({ icon: Icon, iconColor, title, children, delay = "0", stat
 function PremiumInfoRow({ label, value, isLast = false }) {
   return (
     <div className={`group flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 py-3.5 px-3 -mx-3 rounded-xl hover:bg-slate-50/80 transition-colors ${!isLast ? 'border-b border-slate-100/60' : ''}`}>
-      <span className="text-sm font-bold text-slate-400 sm:w-1/3 shrink-0 tracking-wide uppercase text-xs">{label}</span>
-      <span className="text-sm sm:text-base text-slate-800 font-semibold">{value || "—"}</span>
+      <span className="text-xs font-bold text-slate-400 sm:w-1/3 shrink-0 tracking-wide uppercase">{label}</span>
+      <span className="text-sm sm:text-base text-slate-800 font-semibold">{value || "-"}</span>
     </div>
   );
 }
@@ -197,7 +197,7 @@ export default function ProductDetailsClient({ product }) {
 
             {/* Section 2: Warranty & Status */}
             <PremiumCard icon={ShieldCheck} iconColor="bg-emerald-100 text-emerald-600" title="Warranty Details" delay="200">
-              <PremiumInfoRow label="Warranty Period" value={`${formatDate(product.warrantyFrom)} – ${formatDate(product.warrantyTo)}`} />
+              <PremiumInfoRow label="Warranty Period" value={`${formatDate(product.warrantyFrom)} - ${formatDate(product.warrantyTo)}`} />
               <PremiumInfoRow label="Invoice Number" value={product.invoiceNumber} />
               {product.suppliedBy && <PremiumInfoRow label="Supplied By" value={product.suppliedBy} />}
               {product.installedBy && <PremiumInfoRow label="Installed By" value={product.installedBy} />}
@@ -288,7 +288,7 @@ export default function ProductDetailsClient({ product }) {
                         <h4 className="text-xs font-bold uppercase tracking-wide">Technician Remarks</h4>
                       </div>
                       <div className="text-sm font-medium text-amber-900/80 italic leading-relaxed">
-                        &quot;{product.remarks}&quot;
+                        {`"${product.remarks}"`}
                       </div>
                     </div>
                   </div>

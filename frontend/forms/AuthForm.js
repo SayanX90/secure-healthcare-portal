@@ -103,7 +103,7 @@ export default function AuthForm() {
               type="tel"
               value={phone}
               onChange={handleChange}
-              placeholder="9876543210"
+              placeholder="Enter your number"
               maxLength={10}
               required
             />

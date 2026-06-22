@@ -2,15 +2,9 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/backend/database/connection/db";
 import GeneratedOtp from "@/backend/database/models/GeneratedOtp";
 
-// ─── GET /api/auth/testing-otp?phone=XXXXXXXXXX ──────────────────────────────
-// DEV-ONLY endpoint: Returns the latest OTP for a phone number so testers
-// can verify without checking MongoDB directly.
-// Automatically disabled in production via NODE_ENV check.
+// TEMPORARY: OTP preview enabled on all environments for testing.
+// TODO: Re-enable production guard after SMS gateway integration.
 export async function GET(req) {
-  // Block in production — this endpoint must NEVER be accessible in prod
-  if (process.env.NODE_ENV === "production") {
-    return NextResponse.json({ message: "Not available." }, { status: 404 });
-  }
 
   try {
     const { searchParams } = new URL(req.url);

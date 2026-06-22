@@ -23,12 +23,12 @@ export default function OtpForm() {
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
 
-  // ─── TESTING ONLY: Fetch OTP from DB so testers can see it on screen ────────
+  // ─── TEMPORARY: Fetch OTP from DB so testers can see it on screen ───────────
+  // TODO: Re-enable isDev guard after SMS gateway integration.
   const [testingOtp, setTestingOtp] = useState(null);
-  const isDev = process.env.NODE_ENV !== "production";
 
   async function fetchTestingOtp() {
-    if (!isDev || !phone) return;
+    if (!phone) return;
     try {
       const res = await fetch(`/api/auth/testing-otp?phone=${phone}`);
       const data = await res.json();
@@ -205,8 +205,8 @@ export default function OtpForm() {
           </span>.
         </p>
 
-        {/* ── TESTING PREVIEW CHIP: Compact info row for dev/testing ── */}
-        {isDev && testingOtp && (
+        {/* ── TESTING PREVIEW CHIP: Compact info row (temporarily shown on all envs) ── */}
+        {testingOtp && (
           <div className="mt-4 mx-auto flex w-fit items-center justify-center gap-2 rounded-full border border-green-200 bg-[#F0FDF4] px-4 py-1.5 transition-all hover:shadow-sm">
             <Shield className="h-4 w-4 text-green-600" />
             <span className="text-xs font-medium text-green-800">

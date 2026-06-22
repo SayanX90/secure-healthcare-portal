@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
+import { Shield } from "lucide-react";
 import Alert from "@/ui/Alert";
 import Button from "@/ui/Button";
 
@@ -21,6 +22,26 @@ export default function OtpForm() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
+
+  // ─── TESTING ONLY: Fetch OTP from DB so testers can see it on screen ────────
+  const [testingOtp, setTestingOtp] = useState(null);
+  const isDev = process.env.NODE_ENV !== "production";
+
+  async function fetchTestingOtp() {
+    if (!isDev || !phone) return;
+    try {
+      const res = await fetch(`/api/auth/testing-otp?phone=${phone}`);
+      const data = await res.json();
+      if (data.otp) setTestingOtp(data.otp);
+    } catch {
+      // Silently ignore — testing convenience only
+    }
+  }
+
+  useEffect(() => {
+    fetchTestingOtp();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phone]);
 
 
   // On resend, this gets updated with the new expiresAt from the server response.
@@ -147,6 +168,8 @@ export default function OtpForm() {
       }
 
       setSuccess("OTP resent successfully.");
+      // Re-fetch the new testing OTP after resend
+      fetchTestingOtp();
 
       // ISSUE 4 FIX: Use the server-provided expiresAt timestamp to reset the timer.
       // This ensures the countdown is perfectly synced with the actual OTP expiry
@@ -181,6 +204,19 @@ export default function OtpForm() {
             {formattedTime}
           </span>.
         </p>
+
+        {/* ── TESTING PREVIEW CHIP: Compact info row for dev/testing ── */}
+        {isDev && testingOtp && (
+          <div className="mt-4 mx-auto flex w-fit items-center justify-center gap-2 rounded-full border border-green-200 bg-[#F0FDF4] px-4 py-1.5 transition-all hover:shadow-sm">
+            <Shield className="h-4 w-4 text-green-600" />
+            <span className="text-xs font-medium text-green-800">
+              Current Verification Code:
+            </span>
+            <span className="text-sm font-bold tracking-wider text-green-900 font-mono">
+              {testingOtp}
+            </span>
+          </div>
+        )}
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit}>

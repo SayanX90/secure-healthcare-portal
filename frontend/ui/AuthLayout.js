@@ -12,7 +12,7 @@ export default function AuthLayout({ children }) {
                 MEDENDRIYO HEALTHCARE PVT. LTD.
               </span>
               <span className="block text-xs sm:text-[15px] text-emerald-800 font-medium mt-0.5">
-                Secure care management portal
+                A company by Medical Professionals
               </span>
             </div>
           </div>
@@ -22,13 +22,13 @@ export default function AuthLayout({ children }) {
           <section>
             <div className="mb-8 sm:mb-12">
               <p className="text-xs font-bold tracking-widest text-teal-800 uppercase mb-3 sm:mb-4">
-                Patient Care Starts Here
+                Welcome
               </p>
-              <h1 className="text-2xl sm:text-3xl md:text-5xl font-black leading-tight tracking-tight text-slate-900 mb-3 sm:mb-6">
-                Manage home healthcare access with confidence.
+              <h1 className="text-2xl sm:text-3xl md:text-5xl font-black leading-tight tracking-tight text-slate-900 mb-4 sm:mb-6">
+                Be a Member of Indian's Fastest growing Medical Equipment company.
               </h1>
               <p className="text-sm sm:text-base text-slate-700 leading-relaxed max-w-md">
-                A clean and secure portal for care teams, coordinators, and administrators.
+                A single window to manage all your products,complains & learning.
               </p>
             </div>
 

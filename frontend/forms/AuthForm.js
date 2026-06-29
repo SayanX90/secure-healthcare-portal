@@ -69,7 +69,7 @@ export default function AuthForm() {
     <section className="rounded-3xl border border-slate-100 bg-white shadow-2xl shadow-emerald-900/20 p-5 sm:p-8 lg:p-10">
       <div className="mb-6">
         <p className="text-xs font-bold text-emerald-600 mb-2">
-          Welcome back
+          Welcome
         </p>
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 mb-2">
           Login to portal

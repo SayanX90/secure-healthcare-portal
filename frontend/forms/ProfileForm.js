@@ -3,8 +3,7 @@
 
 // ──────────────────────────────────────────────────────────────────────────────
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useRef } from "react";
 
 // Reusable UI components from our project
 import Input from "@/ui/Input";
@@ -17,9 +16,10 @@ import Alert from "@/ui/Alert";
 //   • mode  — "create" (first time) or "edit" (updating existing profile)
 // ──────────────────────────────────────────────────────────────────────────────
 
-export default function ProfileForm({ user, mode = "create" }) {
+// Simple email regex — good enough for frontend validation
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  const router = useRouter();
+export default function ProfileForm({ user, mode = "create" }) {
 
 
   const [formData, setFormData] = useState({
@@ -34,20 +34,111 @@ export default function ProfileForm({ user, mode = "create" }) {
     organizationAddress: user?.organizationAddress || "",
   });
 
+  // Per-field validation errors
+  const [fieldErrors, setFieldErrors] = useState({});
+
   // Error message shown at the top of the form
   const [error, setError] = useState("");
 
   // Loading spinner on the submit button while saving
   const [loading, setLoading] = useState(false);
 
+  // Refs for each field so we can scroll/focus the first invalid one
+  const fieldRefs = {
+    name: useRef(null),
+    gender: useRef(null),
+    age: useRef(null),
+    personalEmail: useRef(null),
+    designation: useRef(null),
+    organizationName: useRef(null),
+    organizationEmail: useRef(null),
+    organizationPhone: useRef(null),
+    organizationAddress: useRef(null),
+  };
+
   function handleChange(e) {
     const fieldName = e.target.name;
-    const fieldValue = e.target.value;
+    let fieldValue = e.target.value;
+
+    // Organization Phone: allow only digits, max 10
+    if (fieldName === "organizationPhone") {
+      fieldValue = fieldValue.replace(/\D/g, "").slice(0, 10);
+    }
 
     // Copy all old values, but overwrite the one that changed
     setFormData(function (oldData) {
       return { ...oldData, [fieldName]: fieldValue };
     });
+
+    // Clear error for this field as user types
+    setFieldErrors(function (oldErrors) {
+      if (!oldErrors[fieldName]) return oldErrors;
+      const copy = { ...oldErrors };
+      delete copy[fieldName];
+      return copy;
+    });
+  }
+
+  // ── Validation ────────────────────────────────────────────────────────────
+  // Returns an object of { fieldName: "error message" }.
+  // Empty object = everything is valid.
+
+  function validate() {
+    const errors = {};
+
+    // --- Required text fields ---
+    if (!formData.name.trim()) {
+      errors.name = "Full Name is required.";
+    }
+
+    if (!formData.gender) {
+      errors.gender = "Gender is required.";
+    }
+
+    // Age: required + must be a valid number
+    if (!String(formData.age).trim()) {
+      errors.age = "Age is required.";
+    } else {
+      const ageNum = Number(formData.age);
+      if (!Number.isFinite(ageNum) || ageNum < 0 || ageNum > 120 || !Number.isInteger(ageNum)) {
+        errors.age = "Please enter a valid age (0–120).";
+      }
+    }
+
+    // Personal Email: required + valid format
+    if (!formData.personalEmail.trim()) {
+      errors.personalEmail = "Personal Email is required.";
+    } else if (!EMAIL_REGEX.test(formData.personalEmail.trim())) {
+      errors.personalEmail = "Please enter a valid email address.";
+    }
+
+    if (!formData.designation.trim()) {
+      errors.designation = "Designation is required.";
+    }
+
+    if (!formData.organizationName.trim()) {
+      errors.organizationName = "Organization Name is required.";
+    }
+
+    // Organization Email: required + valid format
+    if (!formData.organizationEmail.trim()) {
+      errors.organizationEmail = "Organization Email is required.";
+    } else if (!EMAIL_REGEX.test(formData.organizationEmail.trim())) {
+      errors.organizationEmail = "Please enter a valid email address.";
+    }
+
+    // Organization Phone: required + exactly 10 digits
+    if (!formData.organizationPhone.trim()) {
+      errors.organizationPhone = "Organization Phone is required.";
+    } else if (!/^\d{10}$/.test(formData.organizationPhone.trim())) {
+      errors.organizationPhone = "Organization Phone must contain exactly 10 digits.";
+    }
+
+    if (!formData.organizationAddress.trim()) {
+      errors.organizationAddress = "Organization Address is required.";
+    }
+
+    return errors;
   }
 
   // ── Step 3: Handle form submission ───────────────────────────────────────
@@ -60,20 +151,18 @@ export default function ProfileForm({ user, mode = "create" }) {
     // Clear any previous error
     setError("");
 
-    // --- Basic validation: make sure nothing is empty ---
-    const allFieldsFilled =
-      formData.name &&
-      formData.gender &&
-      formData.age &&
-      formData.personalEmail &&
-      formData.designation &&
-      formData.organizationName &&
-      formData.organizationEmail &&
-      formData.organizationPhone &&
-      formData.organizationAddress;
+    // --- Run field-level validation ---
+    const errors = validate();
+    setFieldErrors(errors);
 
-    if (!allFieldsFilled) {
-      setError("Please fill in all required fields.");
+    if (Object.keys(errors).length > 0) {
+      // Scroll to & focus the first invalid field
+      const firstErrorField = Object.keys(errors)[0];
+      const ref = fieldRefs[firstErrorField];
+      if (ref && ref.current) {
+        ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
+        ref.current.focus({ preventScroll: true });
+      }
       return; // Stop here, don't send to server
     }
 
@@ -103,9 +192,12 @@ export default function ProfileForm({ user, mode = "create" }) {
         return;
       }
 
-      // ✅ Success! Redirect to the dashboard
-      router.push("/dashboard");
-      router.refresh(); // Refresh server data so dashboard shows new info
+      // ✅ Success! Hard-navigate to dashboard so the browser sends
+      // the freshly-set auth cookie (with profileCompleted: true).
+      // A client-side router.push() can race ahead of the Set-Cookie
+      // being processed, causing the middleware to see the OLD token
+      // and redirect back to /profile on production (Vercel).
+      window.location.replace("/dashboard");
 
     } catch (err) {
       // Network failure (no internet, server down, etc.)
@@ -140,6 +232,8 @@ export default function ProfileForm({ user, mode = "create" }) {
             onChange={handleChange}
             placeholder="John Doe"
             required
+            ref={fieldRefs.name}
+            error={fieldErrors.name}
           />
 
           {/* Gender (dropdown) */}
@@ -152,13 +246,22 @@ export default function ProfileForm({ user, mode = "create" }) {
               value={formData.gender}
               onChange={handleChange}
               required
-              className="min-h-[48px] h-11 w-full rounded-lg border border-slate-200 bg-white px-4 text-base text-slate-900 outline-none transition-all hover:border-emerald-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm"
+              ref={fieldRefs.gender}
+              className={
+                "min-h-[48px] h-11 w-full rounded-lg border bg-white px-4 text-base text-slate-900 outline-none transition-all shadow-sm " +
+                (fieldErrors.gender
+                  ? "border-red-400 hover:border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
+                  : "border-slate-200 hover:border-emerald-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10")
+              }
             >
               <option value="" disabled>Select Gender</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
               <option value="Other">Other</option>
             </select>
+            {fieldErrors.gender && (
+              <span className="mt-1 block text-xs font-medium text-red-500">{fieldErrors.gender}</span>
+            )}
           </div>
 
           {/* Age */}
@@ -172,6 +275,8 @@ export default function ProfileForm({ user, mode = "create" }) {
             onChange={handleChange}
             placeholder="e.g. 35"
             required
+            ref={fieldRefs.age}
+            error={fieldErrors.age}
           />
 
           {/* Personal Email */}
@@ -183,6 +288,8 @@ export default function ProfileForm({ user, mode = "create" }) {
             onChange={handleChange}
             placeholder="john@example.com"
             required
+            ref={fieldRefs.personalEmail}
+            error={fieldErrors.personalEmail}
           />
 
           {/* Designation */}
@@ -193,6 +300,8 @@ export default function ProfileForm({ user, mode = "create" }) {
             onChange={handleChange}
             placeholder="Doctor"
             required
+            ref={fieldRefs.designation}
+            error={fieldErrors.designation}
           />
         </div>
       </div>
@@ -213,6 +322,8 @@ export default function ProfileForm({ user, mode = "create" }) {
             onChange={handleChange}
             placeholder="City Hospital"
             required
+            ref={fieldRefs.organizationName}
+            error={fieldErrors.organizationName}
           />
 
           {/* Organization Email */}
@@ -224,17 +335,23 @@ export default function ProfileForm({ user, mode = "create" }) {
             onChange={handleChange}
             placeholder="contact@cityhospital.com"
             required
+            ref={fieldRefs.organizationEmail}
+            error={fieldErrors.organizationEmail}
           />
 
           {/* Organization Phone */}
           <Input
             label="Organization Phone *"
             name="organizationPhone"
-            type="tel"
+            type="text"
+            inputMode="numeric"
+            maxLength={10}
             value={formData.organizationPhone}
             onChange={handleChange}
             placeholder="1234567890"
             required
+            ref={fieldRefs.organizationPhone}
+            error={fieldErrors.organizationPhone}
           />
         </div>
 
@@ -250,8 +367,17 @@ export default function ProfileForm({ user, mode = "create" }) {
             required
             rows="3"
             placeholder="123 Health Street, City..."
-            className="min-h-[48px] w-full rounded-lg border border-slate-200 bg-white p-4 text-base text-slate-900 outline-none transition-all hover:border-emerald-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm resize-none"
+            ref={fieldRefs.organizationAddress}
+            className={
+              "min-h-[48px] w-full rounded-lg border bg-white p-4 text-base text-slate-900 outline-none transition-all shadow-sm resize-none " +
+              (fieldErrors.organizationAddress
+                ? "border-red-400 hover:border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
+                : "border-slate-200 hover:border-emerald-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10")
+            }
           />
+          {fieldErrors.organizationAddress && (
+            <span className="mt-1 block text-xs font-medium text-red-500">{fieldErrors.organizationAddress}</span>
+          )}
         </div>
       </div>
 
@@ -264,3 +390,4 @@ export default function ProfileForm({ user, mode = "create" }) {
     </form>
   );
 }
+
